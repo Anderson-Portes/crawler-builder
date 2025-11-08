@@ -30,7 +30,12 @@ export class WorkflowService {
   async findOneDetailed(id: number) {
     return this.workflowRepo.findOne({
       where: { id },
-      relations: ['nodes', 'connections', 'connections.sourceNode', 'connections.targetNode'],
+      relations: [
+        'nodes',
+        'connections',
+        'connections.sourceNode',
+        'connections.targetNode',
+      ],
     });
   }
 

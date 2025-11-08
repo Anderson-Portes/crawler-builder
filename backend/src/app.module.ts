@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { QueueModule } from './queue/queue.module';
 import path from 'path';
 import { WorkflowModule } from './workflow/workflow.module';
 import { NodeModule } from './nodes/nodes.module';
 import { ConnectionModule } from './connections/connections.module';
+import { WorkflowExecutorModule } from './workflow-executor/workflow-executor.module';
 
 @Module({
   imports: [
@@ -25,10 +25,10 @@ import { ConnectionModule } from './connections/connections.module';
         entities: [path.join(__dirname, '**', '*.entity.{ts,js}')],
       }),
     }),
-    QueueModule,
     WorkflowModule,
     NodeModule,
-    ConnectionModule
+    ConnectionModule,
+    WorkflowExecutorModule,
   ],
 })
 export class AppModule {}
