@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import ReactFlow, {
   addEdge,
   Background,
@@ -20,20 +20,17 @@ import {
   updateNode,
   createConnection,
   updateConnection,
+  deleteNode,
+  deleteConnection,
 } from "@/lib/api";
+import { CustomNode } from "./CustomNode";
 
 interface Props {
   workflowId: string;
 }
 
-interface WorkflowNodeData {
-  label: string;
-}
-
 export default function WorkflowBuilder({ workflowId }: Props) {
-  const [nodes, setNodes, onNodesChange] = useNodesState<
-    Node<WorkflowNodeData>[]
-  >([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<{ label: string }>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>([]);
   const [loading, setLoading] = useState(true);
   const [workflow, setWorkflow] = useState<any>(null);
@@ -56,8 +53,8 @@ export default function WorkflowBuilder({ workflowId }: Props) {
       setNodes(
         wf.nodes.map((n: any) => ({
           id: String(n.id),
-          position: { x: n.x ?? 0, y: n.y ?? 0 },
-          data: { label: n.label || `Node ${n.id}` },
+          position: { x: n.config?.x ?? 0, y: n.config?.y ?? 0 },
+          data: { label: n.config?.label || `Node ${n.id}` },
         }))
       );
 
@@ -67,8 +64,8 @@ export default function WorkflowBuilder({ workflowId }: Props) {
           id: String(c.id),
           source: String(c.sourceNode.id),
           target: String(c.targetNode.id),
-          sourceHandle: undefined,
-          targetHandle: undefined,
+          sourceHandle: c.sourceHandle ?? undefined,
+          targetHandle: c.targetHandle ?? undefined,
         }))
       );
 
@@ -78,7 +75,7 @@ export default function WorkflowBuilder({ workflowId }: Props) {
 
   // -------- Add new node --------
   const onAddNode = () => {
-    const newNode: Node<WorkflowNodeData> = {
+    const newNode: Node<{ label: string }> = {
       id: `new-${Date.now()}`,
       data: { label: "Novo Node" },
       position: { x: 100, y: 100 },
@@ -92,8 +89,8 @@ export default function WorkflowBuilder({ workflowId }: Props) {
 
     const newEdge: Edge = {
       id: `new-${Date.now()}`,
-      source: params.source!,
-      target: params.target!,
+      source: params.source,
+      target: params.target,
       sourceHandle: params.sourceHandle ?? undefined,
       targetHandle: params.targetHandle ?? undefined,
     };
@@ -104,45 +101,121 @@ export default function WorkflowBuilder({ workflowId }: Props) {
   const handleSave = async () => {
     if (!workflow) return;
 
-    // Save nodes
-    for (const n of nodes) {
-      if (n.id.startsWith("new-")) {
-        const saved = await createNode({
-          workflowId: Number(workflow.id),
-          type: "default",
-          config: { label: n.data.label, x: n.position.x, y: n.position.y },
-        });
-        n.id = String(saved.id);
-      } else {
-        await updateNode(Number(n.id), {
-          x: n.position.x,
-          y: n.position.y,
-          label: n.data.label,
-        });
-      }
-    }
+    const idMap: Record<string, string> = {};
 
-    // Save connections
-    for (const e of edges) {
-      if (!e.source || !e.target) continue; // garante que não haja edges inválidas
+    // 1️⃣ Salvar nodes
+    const updatedNodes = await Promise.all(
+      nodes.map(async (n) => {
+        if (n.id.startsWith("new-")) {
+          const saved = await createNode({
+            workflowId: Number(workflow.id),
+            type: "default",
+            config: { label: n.data.label, x: n.position.x, y: n.position.y },
+          });
+          idMap[n.id] = String(saved.id);
+          return { ...n, id: String(saved.id) };
+        } else {
+          await updateNode(Number(n.id), {
+            type: "default",
+            config: { label: n.data.label, x: n.position.x, y: n.position.y },
+          });
+          return n;
+        }
+      })
+    );
+
+    setNodes(updatedNodes); // atualiza nodes no estado
+
+    // 2️⃣ Atualizar edges no frontend
+    const updatedEdges = edges.map((e) => ({
+      ...e,
+      source: idMap[e.source] ?? e.source,
+      target: idMap[e.target] ?? e.target,
+    }));
+    setEdges(updatedEdges); // dispara re-render do React Flow
+
+    // 3️⃣ Salvar conexões no backend
+    for (const e of updatedEdges) {
+      if (!e.source || !e.target) continue;
+
+      const payload = {
+        workflowId: Number(workflow.id),
+        sourceNodeId: Number(e.source),
+        targetNodeId: Number(e.target),
+      };
 
       if (e.id.startsWith("new-")) {
-        const saved = await createConnection({
-          workflowId: workflow.id,
-          sourceNodeId: e.source,
-          targetNodeId: e.target,
-        });
+        const saved = await createConnection(payload);
         e.id = String(saved.id);
       } else {
-        await updateConnection(e.id, {
-          sourceNodeId: e.source,
-          targetNodeId: e.target,
-        });
+        await updateConnection(Number(e.id), payload);
       }
     }
 
     alert("Workflow salvo com sucesso!");
   };
+
+  const onDeleteNode = useCallback(
+    async (nodeId: string) => {
+      if (nodeId.startsWith("new-")) {
+        setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+      } else {
+        await deleteNode(Number(nodeId));
+        setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+        // Remove conexões ligadas
+        setEdges((eds) =>
+          eds.filter((e) => e.source !== nodeId && e.target !== nodeId)
+        );
+      }
+    },
+    [setNodes, setEdges]
+  );
+
+  const onDeleteEdge = useCallback(
+    async (edgeId: string) => {
+      if (edgeId.startsWith("new-")) {
+        setEdges((eds) => eds.filter((e) => e.id !== edgeId));
+      } else {
+        await deleteConnection(Number(edgeId));
+        setEdges((eds) => eds.filter((e) => e.id !== edgeId));
+      }
+    },
+    [setEdges]
+  );
+
+  const nodesWithDeleteAndRename = nodes.map((n) => ({
+    ...n,
+    type: "custom",
+    data: {
+      ...n.data,
+      onDelete: (nodeId: string) => {
+        setNodes((nds) => nds.filter((x) => x.id !== nodeId));
+        setEdges((eds) =>
+          eds.filter((e) => e.source !== nodeId && e.target !== nodeId)
+        );
+        if (!nodeId.startsWith("new-")) deleteNode(Number(nodeId));
+      },
+      onRename: (nodeId: string, newLabel: string) => {
+        setNodes((nds) =>
+          nds.map((x) =>
+            x.id === nodeId ? { ...x, data: { ...x.data, label: newLabel } } : x
+          )
+        );
+        if (!nodeId.startsWith("new-"))
+          updateNode(Number(nodeId), {
+            config: { ...n.position, label: newLabel },
+            type: "default",
+          });
+      },
+    },
+  }));
+
+  const memoNodeTypes = useMemo(
+    () => ({
+      custom: CustomNode,
+    }),
+    []
+  );
 
   if (loading) return <div className="p-4">Carregando workflow...</div>;
 
@@ -167,12 +240,12 @@ export default function WorkflowBuilder({ workflowId }: Props) {
       {/* Canvas React Flow */}
       <div className="flex-1">
         <ReactFlow
-          nodes={nodes}
+          nodes={nodesWithDeleteAndRename}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnectNew}
-          fitView
+          nodeTypes={memoNodeTypes}
         >
           <Background />
           <MiniMap />

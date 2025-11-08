@@ -22,23 +22,44 @@ export async function fetchWorkflow(id: string) {
 }
 
 // -------- Nodes --------
-export async function createNode(data: { workflowId: number; x: number; y: number; label: string }) {
+export interface CreateNodePayload {
+  workflowId: number;
+  type: string; // obrigatório
+  config?: {
+    label: string;
+    x: number;
+    y: number;
+    [key: string]: any;
+  };
+}
+
+export async function createNode(payload: CreateNodePayload) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/nodes`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error('Erro ao criar node');
+  if (!res.ok) throw new Error("Erro ao criar node");
   return res.json();
 }
 
-export async function updateNode(id: number, data: { x: number; y: number; label: string }) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/nodes/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+export interface UpdateNodePayload {
+  type: string;
+  config?: {
+    label: string;
+    x: number;
+    y: number;
+    [key: string]: any;
+  };
+}
+
+export async function updateNode(nodeId: number, payload: UpdateNodePayload) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/nodes/${nodeId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error('Erro ao atualizar node');
+  if (!res.ok) throw new Error("Erro ao atualizar node");
   return res.json();
 }
 
@@ -50,7 +71,7 @@ export async function deleteNode(id: number) {
 }
 
 // -------- Connections --------
-export async function createConnection(data: { workflowId: number; sourceNodeId: string; targetNodeId: string }) {
+export async function createConnection(data: { workflowId: number; sourceNodeId: number; targetNodeId: number }) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/connections`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -60,7 +81,7 @@ export async function createConnection(data: { workflowId: number; sourceNodeId:
   return res.json();
 }
 
-export async function updateConnection(id: string, data: { sourceNodeId: string; targetNodeId: string }) {
+export async function updateConnection(id: number, data: { sourceNodeId: number; targetNodeId: number }) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/connections/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -70,7 +91,7 @@ export async function updateConnection(id: string, data: { sourceNodeId: string;
   return res.json();
 }
 
-export async function deleteConnection(id: string) {
+export async function deleteConnection(id: number) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/connections/${id}`, {
     method: 'DELETE',
   });
