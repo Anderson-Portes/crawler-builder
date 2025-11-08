@@ -1,0 +1,58 @@
+services:
+  crawler-builder-db:
+    image: postgres:17
+    container_name: crawler-builder-db
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      PGPORT: ${DB_PORT}
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    restart: always
+
+  crawler-builder-redis:
+    image: redis:7
+    container_name: crawler-builder-redis
+    env_file: .env
+    environment:
+      REDIS_PORT_NUMBER: ${REDIS_PORT}
+    ports:
+      - ${REDIS_PORT}:${REDIS_PORT}
+    command: ["redis-server", "--port", "${REDIS_PORT}"]
+    restart: always
+
+  crawler-builder-backend:
+    image: node:22-slim
+    container_name: crawler-builder-backend
+    env_file: .env
+    working_dir: /usr/src/app
+    ports:
+      - ${BACKEND_PORT}:${BACKEND_PORT}
+    volumes:
+      - ./backend:/usr/src/app
+    command: sh -c "npm install && npm run start:dev"
+    depends_on:
+      - crawler-builder-db
+      - crawler-builder-redis
+    restart: unless-stopped
+
+  crawler-builder-frontend:
+    image: node:22-slim
+    container_name: crawler-builder-frontend
+    env_file: .env
+    working_dir: /usr/src/app
+    ports:
+      - ${FRONTEND_PORT}:${FRONTEND_PORT}
+    volumes:
+      - ./frontend:/usr/src/app
+    command: sh -c "npm install && npm run dev -- -p ${FRONTEND_PORT}"
+    depends_on:
+      - crawler-builder-backend
+    restart: unless-stopped
+
+volumes:
+  db_data:
