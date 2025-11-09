@@ -7,13 +7,13 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
     origin: 'http://localhost:9000',
-  })
+  });
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.REDIS,
     options: {
-      host: process.env.REDIS_HOST || 'localhost',
+      host: process.env.REDIS_HOST,
       port: Number(process.env.REDIS_PORT),
-      retryAttempts: 5,
+      retryAttempts: 10,
       retryDelay: 2000,
     },
   });

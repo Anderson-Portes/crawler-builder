@@ -6,11 +6,18 @@ import { WorkflowModule } from './workflow/workflow.module';
 import { NodeModule } from './nodes/nodes.module';
 import { ConnectionModule } from './connections/connections.module';
 import { WorkflowExecutorModule } from './workflow-executor/workflow-executor.module';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
+    BullModule.forRoot({
+      connection: {
+        host: process.env.REDIS_HOST,
+        port: Number(process.env.REDIS_PORT),
+      },
+    }),
     ConfigModule.forRoot({
-      isGlobal: true
+      isGlobal: true,
     }),
     TypeOrmModule.forRootAsync({
       useFactory: () => ({

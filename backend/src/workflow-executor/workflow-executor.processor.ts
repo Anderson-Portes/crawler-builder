@@ -1,7 +1,8 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { WorkflowExecutorService } from './workflow-executor.service';
+import { WORKFLOW_EXECUTOR_QUEUE } from './workflow-executor.constants';
 
-@Processor('workflow')
+@Processor(WORKFLOW_EXECUTOR_QUEUE)
 export class WorkflowExecutorProcessor extends WorkerHost {
   constructor(
     private readonly workflowExecutorService: WorkflowExecutorService,

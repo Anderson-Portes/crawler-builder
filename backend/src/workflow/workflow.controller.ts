@@ -10,14 +10,10 @@ import {
 import { WorkflowService } from './workflow.service';
 import { CreateWorkflowDto } from './dto/create-workflow.dto';
 import { UpdateWorkflowDto } from './dto/update-workflow.dto';
-import { WorkflowExecutorQueue } from 'src/workflow-executor/workflow-executor.queue';
 
 @Controller('workflows')
 export class WorkflowController {
-  constructor(
-    private readonly workflowService: WorkflowService,
-    private readonly workflowExecutorQueue: WorkflowExecutorQueue,
-  ) {}
+  constructor(private readonly workflowService: WorkflowService) {}
 
   @Post()
   create(@Body() dto: CreateWorkflowDto) {
@@ -32,12 +28,6 @@ export class WorkflowController {
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.workflowService.findOneDetailed(+id);
-  }
-
-  @Post(':id/run')
-  async run(@Param('id') id: number) {
-    const jobId = await this.workflowExecutorQueue.enqueue(+id);
-    return { jobId };
   }
 
   @Patch(':id')
