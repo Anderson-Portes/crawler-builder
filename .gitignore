@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Node
+node_modules/
+.next/
+out/
+build/
+.DS_Store
+
+# Databases
+*.sqlite3
+
+# Docker
+.docker_tmp/
