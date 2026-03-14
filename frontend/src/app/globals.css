@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@layer base {
+  html, body {
+    @apply h-full w-full bg-slate-50 text-slate-900;
+  }
+  
+  /* React Flow overrides (if needed) */
+  .react-flow__node {
+    @apply shadow-sm rounded-lg;
+  }
+}
