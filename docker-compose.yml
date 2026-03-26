@@ -6,6 +6,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+      TZ: America/Sao_Paulo
     ports:
       - "${DB_PORT}:${DB_PORT}"
     command: -p ${DB_PORT}
@@ -22,17 +23,73 @@ services:
       dockerfile: Dockerfile
     container_name: crawler_api
     environment:
+      - TZ=America/Sao_Paulo
+      - CELERY_BROKER_URL=${REDIS_URL}
+      - CELERY_RESULT_BACKEND=${REDIS_URL}
       - FLASK_APP=run.py
       - FLASK_DEBUG=${FLASK_DEBUG}
       - PYTHONDONTWRITEBYTECODE=1
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - PORT=${API_PORT}
+      - HTTP_PROXY=${HTTP_PROXY}
+      - HTTPS_PROXY=${HTTPS_PROXY}
+      - NO_PROXY=${NO_PROXY}
     ports:
       - "${API_PORT}:${API_PORT}"
     volumes:
       - ./backend:/app
     depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+  redis:
+    image: redis:7-alpine
+    container_name: crawler_redis
+    ports:
+      - "6379:6379"
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: crawler_celery_worker
+    command: ["celery", "-A", "make_celery.celery_app", "worker", "-l", "info", "-c", "2"]
+    environment:
+      - TZ=America/Sao_Paulo
+      - FLASK_APP=run.py
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - HTTP_PROXY=${HTTP_PROXY}
+      - HTTPS_PROXY=${HTTPS_PROXY}
+      - NO_PROXY=${NO_PROXY}
+      - CELERY_BROKER_URL=${REDIS_URL}
+      - CELERY_RESULT_BACKEND=${REDIS_URL}
+    volumes:
+      - ./backend:/app
+    depends_on:
+      redis:
+        condition: service_started
+      db:
+        condition: service_healthy
+  celery_beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: crawler_celery_beat
+    command: ["celery", "-A", "make_celery.celery_app", "beat", "-l", "info"]
+    environment:
+      - TZ=America/Sao_Paulo
+      - FLASK_APP=run.py
+      - DATABASE_URL=${DATABASE_URL}
+      - CELERY_BROKER_URL=${REDIS_URL}
+      - CELERY_RESULT_BACKEND=${REDIS_URL}
+      - NO_PROXY=${NO_PROXY}
+    volumes:
+      - ./backend:/app
+    depends_on:
+      redis:
+        condition: service_started
       db:
         condition: service_healthy
   frontend:
@@ -44,6 +101,9 @@ services:
       - NODE_ENV=${NODE_ENV}
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       - PORT=${FRONTEND_PORT}
+      - HTTP_PROXY=${HTTP_PROXY}
+      - HTTPS_PROXY=${HTTPS_PROXY}
+      - NO_PROXY=${NO_PROXY}
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     volumes:

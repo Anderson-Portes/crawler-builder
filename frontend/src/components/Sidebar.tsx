@@ -7,6 +7,7 @@ import {
   Globe,
   LogOut,
   ChevronRight,
+  Clock,
 } from "lucide-react";
 
 export function Sidebar() {
@@ -23,6 +24,7 @@ export function Sidebar() {
   const menuItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Meus Robôs", href: "/dashboard/workflows", icon: Globe },
+    { name: "Agendamentos", href: "/dashboard/schedules", icon: Clock },
   ];
 
   const isActive = (path: string) => {
@@ -32,7 +34,6 @@ export function Sidebar() {
 
   return (
     <aside className="w-64 h-screen bg-white border-r border-slate-200 flex flex-col sticky top-0 shrink-0 shadow-[4px_0_24px_-15px_rgba(0,0,0,0.05)]">
-      {}
       <div className="p-6">
         <Link href="/dashboard" className="flex items-center gap-3 group">
           <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-2.5 rounded-xl shadow-lg shadow-blue-200 group-hover:scale-110 transition-transform duration-300">
@@ -45,7 +46,6 @@ export function Sidebar() {
           </div>
         </Link>
       </div>
-      {}
       <nav className="flex-1 px-4 py-4 space-y-1">
         <div className="pb-4 px-2">
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 mb-2">
@@ -58,11 +58,10 @@ export function Sidebar() {
             <Link
               key={item.name}
               href={item.href}
-              className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group ${
-                active
-                  ? "bg-blue-50 text-blue-600"
-                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
-              }`}
+              className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group ${active
+                ? "bg-blue-50 text-blue-600"
+                : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+                }`}
             >
               <div className="flex items-center gap-3">
                 <item.icon
@@ -80,7 +79,6 @@ export function Sidebar() {
           );
         })}
       </nav>
-      {}
       <div className="p-4 border-t border-slate-100">
         <div className="bg-slate-50 rounded-2xl p-4 mb-4">
           <div className="flex items-center gap-3 mb-3">

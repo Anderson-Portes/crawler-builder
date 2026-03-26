@@ -66,37 +66,83 @@ export default function HistoryPage() {
     }
   };
   const deleteResult = async (resultId: number) => {
-    Swal.fire(
-      "Aviso",
-      "Funcionalidade de exclusão de histórico em desenvolvimento.",
-      "info",
-    );
+    const confirm = await Swal.fire({
+      title: "Apagar execução?",
+      text: "Isso não pode ser desfeito.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sim, apagar",
+      confirmButtonColor: "#ef4444",
+      cancelButtonText: "Cancelar"
+    });
+    if (confirm.isConfirmed) {
+      try {
+        await api.delete(`/workflows/results/${resultId}`);
+        fetchHistory();
+        Swal.fire({ toast: true, position: "top-end", title: "Apagado", icon: "success", showConfirmButton: false, timer: 3000 });
+      } catch (err) {
+        Swal.fire("Erro!", "Não foi possível apagar o registro.", "error");
+      }
+    }
+  };
+
+  const clearHistory = async () => {
+    const confirm = await Swal.fire({
+      title: "Limpar todo o histórico?",
+      text: "Isso apagará todas as execuções deste robô permanentemente.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sim, limpar tudo",
+      confirmButtonColor: "#ef4444",
+      cancelButtonText: "Cancelar"
+    });
+    if (confirm.isConfirmed) {
+      try {
+        await api.delete(`/workflows/${id}/results`);
+        fetchHistory();
+        Swal.fire("Limpo!", "O histórico foi zerado completamente.", "success");
+      } catch (err) {
+        Swal.fire("Erro!", "Não foi possível limpar o histórico.", "error");
+      }
+    }
   };
 
   return (
     <div className="p-4 md:p-10">
       <div className="mx-auto max-w-5xl">
-        <div className="mb-10 flex items-center gap-6">
-          <Link
-            href="/dashboard/workflows"
-            className="group p-3 bg-white hover:bg-blue-600 rounded-2xl transition-all shadow-sm border border-slate-200 hover:border-blue-500"
-          >
-            <ArrowLeft
-              size={24}
-              className="text-slate-500 group-hover:text-white transition-colors"
-            />
-          </Link>
-          <div>
-            <h1 className="text-3xl font-black text-slate-800 tracking-tight">
-              Registro de Atividade
-            </h1>
-            <p className="text-slate-500 font-medium">
-              Linhagem de dados para:{" "}
-              <span className="text-blue-600 font-bold">
-                {workflowName || "Workflow"}
-              </span>
-            </p>
+        <div className="mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div className="flex items-center gap-6">
+            <Link
+              href="/dashboard/workflows"
+              className="group p-3 bg-white hover:bg-blue-600 rounded-2xl transition-all shadow-sm border border-slate-200 hover:border-blue-500"
+            >
+              <ArrowLeft
+                size={24}
+                className="text-slate-500 group-hover:text-white transition-colors"
+              />
+            </Link>
+            <div>
+              <h1 className="text-3xl font-black text-slate-800 tracking-tight">
+                Registro de Atividade
+              </h1>
+              <p className="text-slate-500 font-medium">
+                Linhagem de dados para:{" "}
+                <span className="text-blue-600 font-bold">
+                  {workflowName || "Workflow"}
+                </span>
+              </p>
+            </div>
           </div>
+          
+          {results.length > 0 && (
+             <button
+               onClick={clearHistory}
+               className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-600 hover:text-white transition-all shadow-sm font-bold active:scale-95"
+             >
+               <Trash2 size={18} />
+               <span>Limpar Todo Histórico</span>
+             </button>
+          )}
         </div>
         {loading ? (
           <div className="flex flex-col items-center justify-center p-20 gap-4">

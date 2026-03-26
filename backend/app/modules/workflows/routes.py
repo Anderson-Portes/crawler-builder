@@ -56,6 +56,14 @@ def update_workflow(workflow_id):
         workflow.description = data['description']
     if 'nodes_data' in data:
         workflow.nodes_data = data['nodes_data']
+    if 'is_scheduled' in data:
+        workflow.is_scheduled = data['is_scheduled']
+        if workflow.is_scheduled and workflow.schedule_interval and not workflow.next_run:
+            workflow.next_run = datetime.now() + timedelta(minutes=workflow.schedule_interval)
+    if 'schedule_interval' in data:
+        workflow.schedule_interval = data['schedule_interval']
+        if workflow.is_scheduled:
+            workflow.next_run = datetime.now() + timedelta(minutes=workflow.schedule_interval)
     db.session.commit()
     return jsonify(serialize_workflow(workflow)), 200
 
@@ -116,7 +124,7 @@ def get_stats():
     total_runs = sum(s[1] for s in runs_stats)
     success_count = next((s[1] for s in runs_stats if s[0] == 'success'), 0)
     failure_count = next((s[1] for s in runs_stats if s[0] == 'failed'), 0)
-    seven_days_ago = datetime.utcnow() - timedelta(days=6)
+    seven_days_ago = datetime.now() - timedelta(days=6)
     daily_stats = db.session.query(
         func.date(WorkflowResult.created_at).label('date'),
         func.count(WorkflowResult.id).label('total'),
@@ -205,3 +213,24 @@ def export_result(result_id):
     except Exception as e:
         return jsonify({"error": f"Erro ao gerar arquivo: {str(e)}"}), 500
     return jsonify(extracted_data), 200
+
+@workflows_bp.route('/results/<int:result_id>', methods=['DELETE'])
+@jwt_required()
+def delete_result(result_id):
+    current_user_id = get_jwt_identity()
+    res = WorkflowResult.query.join(Workflow).filter(
+        WorkflowResult.id == result_id, 
+        Workflow.user_id == current_user_id
+    ).first_or_404()
+    db.session.delete(res)
+    db.session.commit()
+    return jsonify({"message": f"Execution {result_id} deleted successfully"}), 200
+
+@workflows_bp.route('/<int:workflow_id>/results', methods=['DELETE'])
+@jwt_required()
+def clear_history(workflow_id):
+    current_user_id = get_jwt_identity()
+    workflow = Workflow.query.filter_by(id=workflow_id, user_id=current_user_id).first_or_404()
+    WorkflowResult.query.filter_by(workflow_id=workflow.id).delete()
+    db.session.commit()
+    return jsonify({"message": f"History cleared for workflow {workflow_id}"}), 200

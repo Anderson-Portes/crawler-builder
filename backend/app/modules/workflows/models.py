@@ -7,8 +7,12 @@ class Workflow(db.Model):
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=True)
     nodes_data = db.Column(db.JSON, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    is_scheduled = db.Column(db.Boolean, default=False)
+    schedule_interval = db.Column(db.Integer, nullable=True) # minutes
+    last_run = db.Column(db.DateTime, nullable=True)
+    next_run = db.Column(db.DateTime, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     def __repr__(self):
         return f"<Workflow {self.name}>"
@@ -20,5 +24,5 @@ class WorkflowResult(db.Model):
     data = db.Column(db.JSON, nullable=True)
     status = db.Column(db.String(50), default='success')
     error_message = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
     workflow = db.relationship('Workflow', backref=db.backref('results', lazy=True, cascade="all, delete-orphan"))

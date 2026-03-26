@@ -26,9 +26,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 # Copiando apenas requirements primeiro para build em cache
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Instala dependências do Python confiando nos hosts para evitar erros de SSL do proxy
+RUN pip install --no-cache-dir \
+    --trusted-host pypi.org \
+    --trusted-host files.pythonhosted.org \
+    --trusted-host pypi.python.org \
+    -r requirements.txt
 # Instalação do Playwright e navegadores necessário
-RUN playwright install chromium
+# NODE_TLS_REJECT_UNAUTHORIZED=0 é usado para ignorar erros de SSL do proxy durante o download
+RUN NODE_TLS_REJECT_UNAUTHORIZED=0 playwright install chromium
 # Copiando aplicação (no docker-compose.yml é mapeado com volume para dev, mas bom manter aqui)
 COPY . .
 # O app usa a variável de ambiente PORT definida no runtime

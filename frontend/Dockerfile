@@ -1,7 +1,8 @@
 FROM node:20-alpine AS base
 WORKDIR /app
 # Instalar dependências necessárias para bibliotecas Node
-RUN apk add --no-cache libc6-compat
+# Configura repositórios como HTTP para evitar erros de certificado em proxies que interceptam SSL
+RUN sed -i 's/https/http/' /etc/apk/repositories && apk add --no-cache libc6-compat
 # Copiar arquivos de package
 COPY package.json package-lock.json ./
 # Instalar dependências
