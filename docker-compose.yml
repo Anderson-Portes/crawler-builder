@@ -24,8 +24,8 @@ services:
     container_name: crawler_api
     environment:
       - TZ=America/Sao_Paulo
-      - CELERY_BROKER_URL=${REDIS_URL}
-      - CELERY_RESULT_BACKEND=${REDIS_URL}
+      - CELERY_BROKER_URL=redis://redis:${REDIS_PORT}/0
+      - CELERY_RESULT_BACKEND=redis://redis:${REDIS_PORT}/0
       - FLASK_APP=run.py
       - FLASK_DEBUG=${FLASK_DEBUG}
       - PYTHONDONTWRITEBYTECODE=1
@@ -48,7 +48,8 @@ services:
     image: redis:7-alpine
     container_name: crawler_redis
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:${REDIS_PORT}"
+    command: redis-server --port ${REDIS_PORT}
   celery_worker:
     build:
       context: ./backend
@@ -63,8 +64,8 @@ services:
       - HTTP_PROXY=${HTTP_PROXY}
       - HTTPS_PROXY=${HTTPS_PROXY}
       - NO_PROXY=${NO_PROXY}
-      - CELERY_BROKER_URL=${REDIS_URL}
-      - CELERY_RESULT_BACKEND=${REDIS_URL}
+      - CELERY_BROKER_URL=redis://redis:${REDIS_PORT}/0
+      - CELERY_RESULT_BACKEND=redis://redis:${REDIS_PORT}/0
     volumes:
       - ./backend:/app
     depends_on:
@@ -82,8 +83,8 @@ services:
       - TZ=America/Sao_Paulo
       - FLASK_APP=run.py
       - DATABASE_URL=${DATABASE_URL}
-      - CELERY_BROKER_URL=${REDIS_URL}
-      - CELERY_RESULT_BACKEND=${REDIS_URL}
+      - CELERY_BROKER_URL=redis://redis:${REDIS_PORT}/0
+      - CELERY_RESULT_BACKEND=redis://redis:${REDIS_PORT}/0
       - NO_PROXY=${NO_PROXY}
     volumes:
       - ./backend:/app
