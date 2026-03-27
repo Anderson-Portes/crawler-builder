@@ -32,12 +32,10 @@ import { PropertiesSidebar } from "@/components/flow/PropertiesSidebar";
 import {
   Play,
   Pencil,
-  Trash2,
   Check,
   X,
   Save,
   ArrowLeft,
-  Bot,
 } from "lucide-react";
 
 const nodeTypes = {
@@ -282,14 +280,6 @@ function EditorContent() {
     },
     [screenToFlowPosition],
   );
-  const deleteSelected = useCallback(() => {
-    const selectedNodes = nodes.filter((n) => n.selected);
-    const selectedEdges = edges.filter((e) => e.selected);
-    if (selectedNodes.length > 0 || selectedEdges.length > 0) {
-      deleteElements({ nodes: selectedNodes, edges: selectedEdges });
-      setSelectedNodeId(null);
-    }
-  }, [nodes, edges, deleteElements]);
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
       <Sidebar />

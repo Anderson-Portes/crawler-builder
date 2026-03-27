@@ -73,50 +73,61 @@ class SelectorNodeHandler(BaseNodeHandler):
         attr = node_data.get("attribute")
         engine = context_data["engine"]
 
-        if query:
-            locator = engine._get_locator(page, query, sel_type)
-            if not locator:
-                return None
+        if not query:
+            return None
 
-            elements = locator.all()
-            extracted = []
-            for el in elements:
-                if attr == "table":
-                    html = el.evaluate(
-                        """el => {
-                        const clone = el.cloneNode(true);
-                        clone.querySelectorAll('button, svg, script, style, .dtcc, .dt-column-order').forEach(n => n.remove());
-                        return clone.outerHTML;
-                    }"""
-                    )
-                    try:
-                        dfs = pd.read_html(io.StringIO(html))
-                        if dfs:
-                            df = dfs[0]
-                            table_data = [df.columns.tolist()] + df.values.tolist()
-                            extracted.extend(table_data)
-                    except Exception as e:
-                        extracted.append(f"Erro ao processar tabela: {str(e)}")
-                elif attr:
-                    if attr in ["outerHTML", "innerHTML", "innerText"]:
-                        val = el.evaluate(f"el => el.{attr}")
-                    else:
-                        tag_name = el.evaluate("el => el.tagName.toLowerCase()")
-                        if attr == "value" and tag_name in [
-                            "input",
-                            "textarea",
-                            "select",
-                        ]:
-                            val = el.input_value()
-                        else:
-                            val = el.get_attribute(attr)
-                    extracted.append(val.strip() if val else "")
-                else:
-                    val = el.inner_text()
-                    extracted.append(val.strip() if val else "")
+        locator = engine._get_locator(page, query, sel_type)
+        if not locator:
+            return None
 
-            engine.last_extracted_data = extracted
+        elements = locator.all()
+        extracted = []
+        for el in elements:
+            self._extract_value(el, attr, extracted)
+
+        engine.last_extracted_data = extracted
         return None
+
+    def _extract_value(self, el, attr: str, extracted: list):
+        if not attr:
+            val = el.inner_text()
+            extracted.append(val.strip() if val else "")
+            return
+
+        if attr == "table":
+            self._extract_table(el, extracted)
+            return
+
+        self._extract_attribute(el, attr, extracted)
+
+    def _extract_table(self, el, extracted: list):
+        html = el.evaluate(
+            """el => {
+            const clone = el.cloneNode(true);
+            clone.querySelectorAll('button, svg, script, style, .dtcc, .dt-column-order').forEach(n => n.remove());
+            return clone.outerHTML;
+        }"""
+        )
+        try:
+            dfs = pd.read_html(io.StringIO(html))
+            if dfs:
+                df = dfs[0]
+                table_data = [df.columns.tolist()] + df.values.tolist()
+                extracted.extend(table_data)
+        except Exception as e:
+            extracted.append(f"Erro ao processar tabela: {str(e)}")
+
+    def _extract_attribute(self, el, attr: str, extracted: list):
+        if attr in ["outerHTML", "innerHTML", "innerText"]:
+            val = el.evaluate(f"el => el.{attr}")
+        else:
+            tag_name = el.evaluate("el => el.tagName.toLowerCase()")
+            if attr == "value" and tag_name in ["input", "textarea", "select"]:
+                val = el.input_value()
+            else:
+                val = el.get_attribute(attr)
+
+        extracted.append(val.strip() if val else "")
 
 
 class ExportNodeHandler(BaseNodeHandler):

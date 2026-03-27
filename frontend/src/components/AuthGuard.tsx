@@ -18,7 +18,6 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
       try {
         const { data } = await api.get("/auth/me");
-        // Optionally update the stored user profile
         localStorage.setItem("user", JSON.stringify(data));
         setIsAuthorized(true);
       } catch (err) {
