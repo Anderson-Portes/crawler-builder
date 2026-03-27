@@ -32,3 +32,14 @@ def login():
         "access_token": access_token,
         "user": serialize_user(user)
     }), 200
+
+from flask_jwt_extended import jwt_required, get_jwt_identity
+
+@auth_bp.route('/me', methods=['GET'])
+@jwt_required()
+def get_current_user():
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+    if not user:
+        return jsonify({"error": "Usuário não encontrado"}), 404
+    return jsonify(serialize_user(user)), 200

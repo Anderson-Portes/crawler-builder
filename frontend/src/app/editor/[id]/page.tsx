@@ -20,15 +20,15 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import Swal from "sweetalert2";
-import api from "@/config/api";
+import api from "@/lib/api";
 import { Sidebar } from "@/components/Sidebar";
-import { HttpNode } from "@/flow/nodes/HttpNode";
-import { SelectorNode } from "@/flow/nodes/SelectorNode";
-import { ExportNode } from "@/flow/nodes/ExportNode";
-import { ClickNode } from "@/flow/nodes/ClickNode";
-import { InputNode } from "@/flow/nodes/InputNode";
-import { WaitNode } from "@/flow/nodes/WaitNode";
-import { PropertiesSidebar } from "@/flow/PropertiesSidebar";
+import { HttpNode } from "@/components/flow/nodes/HttpNode";
+import { SelectorNode } from "@/components/flow/nodes/SelectorNode";
+import { ExportNode } from "@/components/flow/nodes/ExportNode";
+import { ClickNode } from "@/components/flow/nodes/ClickNode";
+import { InputNode } from "@/components/flow/nodes/InputNode";
+import { WaitNode } from "@/components/flow/nodes/WaitNode";
+import { PropertiesSidebar } from "@/components/flow/PropertiesSidebar";
 import {
   Play,
   Pencil,
@@ -51,11 +51,15 @@ const nodeTypes = {
 
 const initialNodes: Node[] = [];
 
+import { AuthGuard } from "@/components/AuthGuard";
+
 export default function EditorPage() {
   return (
-    <ReactFlowProvider>
-      <EditorContent />
-    </ReactFlowProvider>
+    <AuthGuard>
+      <ReactFlowProvider>
+        <EditorContent />
+      </ReactFlowProvider>
+    </AuthGuard>
   );
 }
 
@@ -71,12 +75,10 @@ function EditorContent() {
   const [isEditing, setIsEditing] = useState(false);
   const [tempTitle, setTempTitle] = useState("");
   useEffect(() => {
-    if (!localStorage.getItem("access_token")) {
-      router.push("/");
-    } else if (params.id) {
+    if (params.id) {
       loadWorkflow(params.id as string);
     }
-  }, [params.id, router]);
+  }, [params.id]);
   const loadWorkflow = async (id: string) => {
     try {
       const { data } = await api.get(`/workflows/${id}`);
@@ -173,24 +175,23 @@ function EditorContent() {
                 <p class="font-bold text-slate-600 mb-1">Prévia dos Dados:</p>
                 <pre class="bg-slate-100 p-3 rounded text-xs overflow-auto max-h-40 border border-slate-200">${JSON.stringify(mainResult, null, 2)}</pre>
               </div>
-              ${
-                exportNodes.length > 0
-                  ? `
+              ${exportNodes.length > 0
+              ? `
                 <div class="border-t pt-4">
                   <p class="font-bold text-slate-600 mb-2">Arquivos Gerados:</p>
                   <div class="flex flex-wrap gap-2">
                     ${exportNodes
-                      .map(
-                        (node: any) => `
+                .map(
+                  (node: any) => `
                       <button id="download-${node.format}-${resultId}" class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold flex items-center gap-1 transition">📥 Baixar ${node.format}</button>
                     `,
-                      )
-                      .join("")}
+                )
+                .join("")}
                   </div>
                 </div>
               `
-                  : ""
-              }
+              : ""
+            }
             </div>
           `,
           icon: "success",
@@ -293,7 +294,6 @@ function EditorContent() {
     <div className="flex h-screen bg-slate-50 overflow-hidden">
       <Sidebar />
       <div className="flex-1 flex flex-col relative overflow-hidden">
-        {}
         <header className="h-16 border-b bg-white/80 backdrop-blur-md px-6 flex items-center justify-between z-20 sticky top-0">
           <div className="flex items-center gap-4">
             <Link
@@ -357,11 +357,10 @@ function EditorContent() {
             <button
               onClick={runWorkflow}
               disabled={isRunning}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-black text-white transition-all shadow-lg active:scale-95 ${
-                isRunning
-                  ? "bg-blue-400 cursor-not-allowed shadow-none"
-                  : "bg-blue-600 hover:bg-blue-700 shadow-blue-200 shadow-lg"
-              }`}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-black text-white transition-all shadow-lg active:scale-95 ${isRunning
+                ? "bg-blue-400 cursor-not-allowed shadow-none"
+                : "bg-blue-600 hover:bg-blue-700 shadow-blue-200 shadow-lg"
+                }`}
             >
               <Play size={18} fill="currentColor" />
               {isRunning ? "Executando..." : "Rodar Fluxo"}
@@ -369,7 +368,7 @@ function EditorContent() {
           </div>
         </header>
         <div className="flex-1 flex overflow-hidden">
-          {}
+
           <aside className="w-64 border-r bg-white p-6 shadow-sm flex flex-col z-10 overflow-y-auto">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">
               Blocos Disponíveis
@@ -421,7 +420,7 @@ function EditorContent() {
               </p>
             </div>
           </aside>
-          {}
+
           <main
             className="flex-1 relative"
             onDragOver={onDragOver}

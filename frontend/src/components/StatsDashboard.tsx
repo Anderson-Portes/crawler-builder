@@ -21,7 +21,7 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
-import api from "@/config/api";
+import api from "@/lib/api";
 
 interface StatsData {
   total_workflows: number;
@@ -61,7 +61,7 @@ export function StatsDashboard() {
   if (!stats) return null;
   return (
     <div className="space-y-6 mb-10">
-      {}
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatCard
           title="Total de Fluxos"
@@ -89,7 +89,7 @@ export function StatsDashboard() {
         />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {}
+
         <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-6">
             Atividade Semanal
@@ -144,7 +144,7 @@ export function StatsDashboard() {
             </ResponsiveContainer>
           </div>
         </div>
-        {}
+
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
           <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">
             Saúde dos Robôs
@@ -172,7 +172,7 @@ export function StatsDashboard() {
           </div>
         </div>
       </div>
-      {}
+
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
         <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-6">
           Workflows Mais Ativos

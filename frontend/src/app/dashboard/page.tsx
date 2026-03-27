@@ -1,17 +1,9 @@
 "use client";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { StatsDashboard } from "@/components/StatsDashboard";
 
 export default function DashboardPage() {
-  const router = useRouter();
-  useEffect(() => {
-    if (!localStorage.getItem("access_token")) {
-      router.push("/");
-    }
-  }, [router]);
   return (
     <div className="p-4 md:p-10">
       <div className="mx-auto max-w-6xl">

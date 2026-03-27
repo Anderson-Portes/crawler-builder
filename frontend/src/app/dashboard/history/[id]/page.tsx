@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
   ArrowLeft,
   Download,
@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Swal from "sweetalert2";
-import api from "@/config/api";
+import api from "@/lib/api";
 
 interface ExecutionResult {
   id: number;
@@ -22,7 +22,6 @@ interface ExecutionResult {
 }
 
 export default function HistoryPage() {
-  const router = useRouter();
   const { id } = useParams();
   const [results, setResults] = useState<ExecutionResult[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,12 +39,8 @@ export default function HistoryPage() {
     }
   }, [id]);
   useEffect(() => {
-    if (!localStorage.getItem("access_token")) {
-      router.push("/");
-    } else {
-      fetchHistory();
-    }
-  }, [router, fetchHistory]);
+    fetchHistory();
+  }, [fetchHistory]);
   const handleDownload = async (resultId: number, format: string) => {
     try {
       const response = await api.get(
@@ -133,15 +128,15 @@ export default function HistoryPage() {
               </p>
             </div>
           </div>
-          
+
           {results.length > 0 && (
-             <button
-               onClick={clearHistory}
-               className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-600 hover:text-white transition-all shadow-sm font-bold active:scale-95"
-             >
-               <Trash2 size={18} />
-               <span>Limpar Todo Histórico</span>
-             </button>
+            <button
+              onClick={clearHistory}
+              className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-600 hover:text-white transition-all shadow-sm font-bold active:scale-95"
+            >
+              <Trash2 size={18} />
+              <span>Limpar Todo Histórico</span>
+            </button>
           )}
         </div>
         {loading ? (

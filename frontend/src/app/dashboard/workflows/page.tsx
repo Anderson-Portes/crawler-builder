@@ -2,9 +2,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Plus, Pencil, Play, Trash2, History, Search, Bot } from "lucide-react";
+import { Plus, Pencil, Trash2, History, Search, Bot } from "lucide-react";
 import Swal from "sweetalert2";
-import api from "@/config/api";
+import api from "@/lib/api";
 
 interface Workflow {
   id: number;
@@ -32,12 +32,8 @@ export default function WorkflowsPage() {
     }
   };
   useEffect(() => {
-    if (!localStorage.getItem("access_token")) {
-      router.push("/");
-    } else {
-      fetchWorkflows();
-    }
-  }, [router]);
+    fetchWorkflows();
+  }, []);
   const createWorkflow = async () => {
     try {
       const { data } = await api.post("/workflows/", {
@@ -94,7 +90,6 @@ export default function WorkflowsPage() {
             Novo Robô de Scraping
           </button>
         </div>
-        {}
         <div className="mb-8 relative max-w-md">
           <Search
             className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"

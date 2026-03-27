@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
-import api from "@/config/api";
+import api from "@/lib/api";
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);

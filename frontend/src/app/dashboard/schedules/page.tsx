@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Clock, CalendarClock, X, Check, Search } from "lucide-react";
 import Swal from "sweetalert2";
-import api from "@/config/api";
+import api from "@/lib/api";
 
 interface Workflow {
   id: number;
@@ -19,7 +19,7 @@ export default function SchedulesPage() {
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  
+
   // Modal State
   const [selectedWf, setSelectedWf] = useState<Workflow | null>(null);
   const [isScheduled, setIsScheduled] = useState(false);
@@ -39,12 +39,8 @@ export default function SchedulesPage() {
   };
 
   useEffect(() => {
-    if (!localStorage.getItem("access_token")) {
-      router.push("/");
-    } else {
-      fetchWorkflows();
-    }
-  }, [router]);
+    fetchWorkflows();
+  }, []);
 
   const openScheduleModal = (wf: Workflow) => {
     setSelectedWf(wf);
@@ -120,9 +116,8 @@ export default function SchedulesPage() {
             {filteredWorkflows.map((wf) => (
               <div
                 key={wf.id}
-                className={`group flex flex-col justify-between rounded-3xl border-2 transition-all duration-300 shadow-sm overflow-hidden ${
-                  wf.is_scheduled ? 'border-blue-200 bg-blue-50/10' : 'border-slate-200 bg-white hover:border-blue-100'
-                }`}
+                className={`group flex flex-col justify-between rounded-3xl border-2 transition-all duration-300 shadow-sm overflow-hidden ${wf.is_scheduled ? 'border-blue-200 bg-blue-50/10' : 'border-slate-200 bg-white hover:border-blue-100'
+                  }`}
               >
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">
@@ -130,20 +125,20 @@ export default function SchedulesPage() {
                       <Clock size={24} />
                     </div>
                     {wf.is_scheduled ? (
-                       <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest bg-blue-100 px-3 py-1.5 rounded-md flex items-center gap-1">
-                       <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
-                       Ativo
-                     </span>
+                      <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest bg-blue-100 px-3 py-1.5 rounded-md flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                        Ativo
+                      </span>
                     ) : (
                       <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-100 px-3 py-1.5 rounded-md flex items-center gap-1">
-                      Pausado
-                    </span>
+                        Pausado
+                      </span>
                     )}
                   </div>
                   <h3 className="mb-2 text-xl font-black text-slate-800 truncate" title={wf.name}>
                     {wf.name}
                   </h3>
-                  
+
                   {wf.is_scheduled ? (
                     <div className="space-y-1 mt-4">
                       <p className="text-sm font-semibold text-slate-600">Rodando a cada {wf.schedule_interval} minutos</p>
@@ -153,18 +148,17 @@ export default function SchedulesPage() {
                     <p className="text-sm text-slate-500 font-medium mt-4">Este robô só roda manualmente.</p>
                   )}
                 </div>
-                
+
                 <div className="bg-slate-50/50 p-4 border-t border-slate-100 flex">
-                   <button
+                  <button
                     onClick={() => openScheduleModal(wf)}
-                    className={`w-full py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all ${
-                      wf.is_scheduled 
-                        ? 'bg-white border-2 border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600' 
+                    className={`w-full py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all ${wf.is_scheduled
+                        ? 'bg-white border-2 border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600'
                         : 'bg-blue-600 border-2 border-blue-600 text-white hover:bg-blue-700'
-                    }`}
-                   >
-                     {wf.is_scheduled ? 'Editar Agenda' : 'Criar Agenda'}
-                   </button>
+                      }`}
+                  >
+                    {wf.is_scheduled ? 'Editar Agenda' : 'Criar Agenda'}
+                  </button>
                 </div>
               </div>
             ))}
@@ -177,14 +171,14 @@ export default function SchedulesPage() {
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between">
               <h2 className="text-xl font-black text-slate-800">🗓️ Agendar Robô</h2>
-              <button 
-                onClick={() => setSelectedWf(null)} 
+              <button
+                onClick={() => setSelectedWf(null)}
                 className="p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors"
               >
                 <X size={20} />
               </button>
             </div>
-            
+
             <div className="p-6 space-y-6">
               <div>
                 <p className="text-sm font-bold text-slate-500 mb-1">Robô Selecionado</p>
@@ -197,11 +191,11 @@ export default function SchedulesPage() {
                   <p className="text-xs text-slate-500 font-medium">Permitir execução automática.</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    className="sr-only peer" 
-                    checked={isScheduled} 
-                    onChange={(e) => setIsScheduled(e.target.checked)} 
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={isScheduled}
+                    onChange={(e) => setIsScheduled(e.target.checked)}
                   />
                   <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                 </label>
@@ -227,13 +221,13 @@ export default function SchedulesPage() {
             </div>
 
             <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
-              <button 
+              <button
                 onClick={() => setSelectedWf(null)}
                 className="flex-1 py-3 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors"
               >
                 Cancelar
               </button>
-              <button 
+              <button
                 onClick={saveSchedule}
                 disabled={saving || (isScheduled && (!intervalMinutes || intervalMinutes < 1))}
                 className="flex-1 py-3 text-sm font-black text-white bg-blue-600 rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-blue-200 transition-all flex items-center justify-center gap-2"
