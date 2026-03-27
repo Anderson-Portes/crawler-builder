@@ -10,6 +10,7 @@ from app.modules.nodes import nodes_bp
 from app.modules.auth.models import User
 from app.modules.workflows.models import Workflow, WorkflowResult
 from app.modules.nodes.models import Node
+from app.modules.edges.models import Edge
 
 def health_check():
     try:

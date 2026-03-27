@@ -8,6 +8,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.extensions import db
 from . import workflows_bp
 from .models import Workflow, WorkflowResult
+from app.modules.nodes.models import Node
+from app.modules.edges.models import Edge
 from .schemas import serialize_workflow
 from .engine import ScrapingEngine
 
@@ -35,11 +37,34 @@ def create_workflow():
     new_workflow = Workflow(
         name=data['name'],
         description=data.get('description', ''),
-        nodes_data=data.get('nodes_data', {}),
         user_id=current_user_id
     )
     db.session.add(new_workflow)
     db.session.commit()
+    
+    # Salvar nodes iniciais se existirem
+    nodes_data = data.get('nodes_data', {})
+    if nodes_data:
+        for n in nodes_data.get('nodes', []):
+            new_node = Node(
+                workflow_id=new_workflow.id,
+                frontend_id=n['id'],
+                type=n['type'],
+                position_x=n['position']['x'],
+                position_y=n['position']['y'],
+                data=n.get('data', {})
+            )
+            db.session.add(new_node)
+        for e in nodes_data.get('edges', []):
+            new_edge = Edge(
+                workflow_id=new_workflow.id,
+                frontend_id=e['id'],
+                source=e['source'],
+                target=e['target']
+            )
+            db.session.add(new_edge)
+        db.session.commit()
+        
     return jsonify(serialize_workflow(new_workflow)), 201
 
 @workflows_bp.route('/<int:workflow_id>', methods=['PUT', 'PATCH'])
@@ -55,7 +80,34 @@ def update_workflow(workflow_id):
     if 'description' in data:
         workflow.description = data['description']
     if 'nodes_data' in data:
-        workflow.nodes_data = data['nodes_data']
+        # Sincronização estruturada de Nodes e Edges
+        # 1. Limpar atuais (estratégia simples de overwrite no save)
+        Node.query.filter_by(workflow_id=workflow.id).delete()
+        Edge.query.filter_by(workflow_id=workflow.id).delete()
+        
+        # 2. Inserir novos
+        nodes_data = data['nodes_data']
+        for n in nodes_data.get('nodes', []):
+            pos = n.get('position', {'x': 0, 'y': 0})
+            new_node = Node(
+                workflow_id=workflow.id,
+                frontend_id=n['id'],
+                type=n['type'],
+                position_x=pos.get('x', 0),
+                position_y=pos.get('y', 0),
+                data=n.get('data', {})
+            )
+            db.session.add(new_node)
+            
+        for e in nodes_data.get('edges', []):
+            new_edge = Edge(
+                workflow_id=workflow.id,
+                frontend_id=e['id'],
+                source=e['source'],
+                target=e['target']
+            )
+            db.session.add(new_edge)
+    
     if 'is_scheduled' in data:
         workflow.is_scheduled = data['is_scheduled']
         if workflow.is_scheduled and workflow.schedule_interval and not workflow.next_run:
@@ -81,7 +133,11 @@ def delete_workflow(workflow_id):
 def run_workflow(workflow_id):
     current_user_id = get_jwt_identity()
     workflow = Workflow.query.filter_by(id=workflow_id, user_id=current_user_id).first_or_404()
-    engine = ScrapingEngine(workflow.nodes_data or {})
+    
+    # Reconstruímos o nodes_data a partir das tabelas para o Engine
+    flow_data = serialize_workflow(workflow)['nodes_data']
+    
+    engine = ScrapingEngine(flow_data or {})
     res = engine.run()
     new_result = WorkflowResult(
         workflow_id=workflow.id,

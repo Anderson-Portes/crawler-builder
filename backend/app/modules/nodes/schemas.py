@@ -1,9 +1,10 @@
 from .models import Node
 
+
 def serialize_node(node: Node):
     return {
-        "id": node.id,
+        "id": node.frontend_id,
         "type": node.type,
-        "name": node.name,
-        "configuration": node.configuration,
+        "position": {"x": node.position_x, "y": node.position_y},
+        "data": node.data,
     }

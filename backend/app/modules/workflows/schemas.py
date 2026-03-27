@@ -1,11 +1,19 @@
 from .models import Workflow
+from app.modules.nodes.schemas import serialize_node
+from app.modules.edges.schemas import serialize_edge
+
 
 def serialize_workflow(workflow: Workflow):
+    flow_data = {
+        "nodes": [serialize_node(n) for n in workflow.nodes],
+        "edges": [serialize_edge(e) for e in workflow.edges],
+    }
+
     return {
         "id": workflow.id,
         "name": workflow.name,
         "description": workflow.description,
-        "nodes_data": workflow.nodes_data,
+        "nodes_data": flow_data,
         "user_id": workflow.user_id,
         "is_scheduled": workflow.is_scheduled or False,
         "schedule_interval": workflow.schedule_interval,

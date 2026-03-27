@@ -6,7 +6,8 @@ class Workflow(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=True)
-    nodes_data = db.Column(db.JSON, nullable=True)
+    nodes_data = db.Column(db.JSON, nullable=True) # Legado: Substituído pelas tabelas Node e Edge
+
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     is_scheduled = db.Column(db.Boolean, default=False)

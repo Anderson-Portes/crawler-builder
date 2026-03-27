@@ -18,4 +18,4 @@ build/
 # Docker
 .docker_tmp/
 
-./backend/celerybeat-schedule
+/backend/celerybeat-schedule
