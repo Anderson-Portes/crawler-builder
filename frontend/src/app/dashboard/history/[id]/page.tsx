@@ -44,7 +44,7 @@ export default function HistoryPage() {
   const handleDownload = async (resultId: number, format: string) => {
     try {
       const response = await api.get(
-        `/workflows/results/${resultId}/export?format=${format}`,
+        `/workflow-results/${resultId}/export?format=${format}`,
         {
           responseType: "blob",
         },
@@ -72,7 +72,7 @@ export default function HistoryPage() {
     });
     if (confirm.isConfirmed) {
       try {
-        await api.delete(`/workflows/results/${resultId}`);
+        await api.delete(`/workflow-results/${resultId}`);
         fetchHistory();
         Swal.fire({ toast: true, position: "top-end", title: "Apagado", icon: "success", showConfirmButton: false, timer: 3000 });
       } catch (err) {

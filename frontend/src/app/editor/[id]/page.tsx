@@ -142,7 +142,7 @@ function EditorContent() {
       const handleDownload = async (resultId: number, format: string) => {
         try {
           const response = await api.get(
-            `/workflows/results/${resultId}/export?format=${format}`,
+            `/workflow-results/${resultId}/export?format=${format}`,
             {
               responseType: "blob",
             },

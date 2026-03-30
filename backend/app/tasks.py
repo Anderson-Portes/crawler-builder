@@ -1,5 +1,6 @@
 from app.extensions import db
-from app.modules.workflows.models import Workflow, WorkflowResult
+from app.modules.workflows.models import Workflow
+from app.modules.workflow_results.models import WorkflowResult
 from app.modules.workflows.engine import ScrapingEngine
 from datetime import datetime, timedelta
 from app.modules.workflows.schemas import serialize_workflow
