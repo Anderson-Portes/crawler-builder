@@ -1,0 +1,11 @@
+REGISTRO DE ATIVIDADE (HISTÓRICO)
+
+O que faz: 
+Fornece um registro de logs (log audit) com o rastro cronológico das execuções e resultados do robô. É por esta página que o usuário faz o download do resultado gerado pelas raspagens e também audita eventuais falhas do fluxo.
+
+Fluxo e Regras por trás dos panos:
+
+- A página consome um endpoint do banco que traz a relação histórica de uma automação específica.
+- Regra de Sucesso: Se a execução rodar sem incidentes e se o fluxo contiver o bloco "Exportar Dados", o log apontará "Status: Concluído" e exibirá dinamicamente botões na tela para baixar (fazer download) dos dados já formatados (JSON, etc.).
+- Regra de Falha: Se durante a execução "invisível" o Motor encontrar um problema (exemplo: a página estava muito lenta, ou um elemento da interface esperado não foi localizado), o Motor aborta a rotina e o sistema salva o erro. A interface reportará "Status: Falhou" e imprimirá para o usuário a mensagem de erro exata retornada pelo servidor no momento da interrupção.
+- Manutenção: É possível limpar registros individuais ou executar o expurgo de todo o histórico daquele fluxo de uma vez.

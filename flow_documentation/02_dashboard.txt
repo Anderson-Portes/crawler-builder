@@ -1,0 +1,13 @@
+CENTRO DE COMANDO (DASHBOARD GERAL)
+
+O que faz: 
+É o painel central acessado logo após o login no sistema. Ele exibe um resumo e métricas em tempo real sobre o status e desempenho dos robôs (workflows) do usuário.
+
+Fluxo e Regras por trás dos panos:
+
+- Assim que a página é carregada, o sistema consulta os dados estatísticos diretamente no banco de dados do usuário ativo, retornando:
+  - O total de robôs cadastrados na conta.
+  - O total de execuções (o número absoluto de vezes que os robôs já trabalharam).
+  - A taxa de sucesso e falha (percentual de execuções perfeitas versus aquelas que apresentaram erros).
+  - Um gráfico de volume diário mostrando o histórico de atividade.
+  - Um ranking elencando os "top robôs", ou seja, aqueles que são executados com maior frequência.

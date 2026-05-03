@@ -1,0 +1,11 @@
+AGENDAMENTOS (SCHEDULES)
+
+O que faz: 
+É a página de orquestração assíncrona do sistema. Permite que o usuário programe os fluxos para operarem autonomamente (em segundo plano), estabelecendo uma frequência de execução. 
+
+Fluxo e Regras por trás dos panos:
+
+- A interface lista os robôs e permite habilitar o agendamento individual através de um botão de ação rápida (toggle).
+- Ao acionar a opção "Ativar Agendamento", é revelado um campo para estipular o intervalo de execução em minutos. 
+- Regra de Saldo: Quando a agenda é confirmada (botão salvar), os campos "is_scheduled" (ativo/inativo) e "schedule_interval" (intervalo) daquele robô são atualizados no banco de dados, marcando o horário de sua próxima rodada ("next_run").
+- Execução Automática: A infraestrutura do servidor é mantida por um serviço interno rodando de forma contínua, conhecido como "Celery Beat". O papel desse relógio do sistema é checar perpetuamente o banco de dados e identificar quais robôs possuem horário agendado de "next_run" igual ou inferior à hora atual. Quando é hora de rodar, o Celery desperta silenciosamente o Motor de Execução (Playwright) via API, gerando o trabalho e salvando o log normalmente como se o usuário estivesse na tela, operando na capacidade plena de automação.

@@ -1,0 +1,22 @@
+O EDITOR DE WORKFLOWS (CRIADOR DE ROBÔS)
+
+O que faz: 
+É o componente mais robusto do sistema. Atua como um ambiente interativo onde o usuário projeta a estrutura lógica e o comportamento do robô. Funciona de maneira visual, bastando arrastar, soltar e conectar os blocos funcionais.
+
+Fluxo e Regras por trás dos panos:
+
+- Funcionamento Visual (Canvas): O usuário acessa painéis laterais com diferentes blocos (Nós/Nodes):
+  - HTTP Request: Navega para um site (ex: "Acessar site.com").
+  - CSS Selector: Captura e extrai elementos da página (ex: "Puxar o texto do título H1").
+  - Clicar Elemento: Aciona cliques automáticos na página (ex: Botão "Próximo").
+  - Digitar Texto: Preenche entradas ou campos de formulário e buscas.
+  - Delay (Espera): Força o robô a aguardar (útil para o carregamento total de páginas dinâmicas).
+  - Exportar Dados: Finaliza o fluxo compilando e exportando as informações capturadas em arquivos, como JSON ou CSV.
+
+- Persistência (Salvar): 
+  - Regra Crítica: As alterações feitas no canvas são manipuladas apenas no navegador até que o botão "Salvar" seja acionado. Ao salvar, o frontend converte as coordenadas visuais, os dados internos de cada bloco e o mapa de conexões (edges) entre eles para um formato de dados unificado. Esse pacote é então enviado para a API e guardado de forma estruturada nas tabelas do banco de dados.
+
+- Execução Manual (Rodar Fluxo):
+  - Regra: Ao clicar em "Rodar Fluxo", o frontend requisita o processamento à API do backend. 
+  - A API transfere o fluxo mapeado a um "Motor de Execução" baseado na biblioteca Playwright. O Motor inicializa um navegador "headless" (invisível no backend) e processa os comandos dos blocos seguindo o mapa exato definido pelo usuário.
+  - Ao término, retorna o status e os dados coletados (se houver o bloco de Exportar) para serem visualizados e baixados diretamente no painel.

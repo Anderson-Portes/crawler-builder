@@ -1,0 +1,12 @@
+PÁGINA INICIAL (LOGIN E CADASTRO)
+
+O que faz: 
+É a porta de entrada do sistema. Permite que novos usuários criem uma conta e que usuários já cadastrados entrem no painel principal.
+
+Fluxo e Regras por trás dos panos:
+
+1. Para Cadastrar: O usuário precisa inserir um e-mail válido e uma senha.
+   - Regra: O sistema verifica no banco de dados se o e-mail já existe. Se existir, ele bloqueia o cadastro e avisa ("Usuário já existe"). Se for um e-mail novo, ele criptografa a senha (por segurança) e salva a nova conta no banco de dados.
+
+2. Para Entrar (Login): O usuário preenche e-mail e senha.
+   - Regra: O sistema confere se o e-mail existe e se a senha está correta. Se sim, ele gera um "Crachá Virtual" (chamado de Token de Acesso ou JWT). Esse crachá fica guardado no navegador do usuário e serve para provar ao sistema sua identidade em todas as outras páginas, permitindo a navegação sem precisar fazer login novamente a cada ação. Se as credenciais estiverem erradas, ele exibe a mensagem de erro ("Credenciais inválidas").

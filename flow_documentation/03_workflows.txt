@@ -1,0 +1,13 @@
+MEUS ROBÔS (WORKFLOWS)
+
+O que faz: 
+É a biblioteca onde ficam guardados todos os robôs (fluxos de raspagem de dados) que o usuário criou. Permite visualizar, criar, editar, acessar o histórico ou deletar as automações.
+
+Fluxo e Regras por trás dos panos:
+
+- A interface renderiza uma lista com todos os robôs salvos, detalhando suas propriedades básicas.
+- Para Criar um Novo Robô: Ao clicar em "Novo Robô", o sistema dispara uma requisição silenciosa ao banco de dados, cria um esqueleto (um registro vazio) de um fluxo e, instantaneamente, redireciona o usuário para a página do Editor com o ID desse novo fluxo já gerado.
+- Ações Individuais (em cada card de robô):
+  - Editar: Leva o usuário para o Editor Visual do respectivo robô.
+  - Ver Histórico: Leva o usuário para o Registro de Atividade, que lista logs apenas daquele robô.
+  - Excluir: Dispara um aviso de confirmação. Regra: Se o usuário confirmar a exclusão, o sistema apaga o registro mestre do robô e exclui todas as configurações, nós (nodes), conexões (edges) e históricos associados a ele no banco de dados.
